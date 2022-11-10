@@ -19,7 +19,11 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
    try {
       const serviceCollection = client.db("wild-photo").collection("services");
-      
+      app.get("/servehome", async (req, res) => {
+         const query = {};
+         const serviceHome = await serviceCollection.find(query).limit(3).toArray();
+         res.send(serviceHome);
+      });
    } finally {
    }
 }
