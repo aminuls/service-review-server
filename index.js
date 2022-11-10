@@ -34,15 +34,9 @@ async function run() {
          const id = req.params.id;
          const query = { _id: ObjectId(id) };
          const serviceOne = await serviceCollection.findOne(query);
-         // date code write here
-         /* const date = new Date().toLocaleDateString("bn-BD");
-         const time = new Date().toLocaleTimeString("bn-BD");
-         const timeInMili = new Date().getTime();
-         console.log(date, time, timeInMili); */
-         // sort id : id: 1----> .sort({"timeInMili": -1})
          res.send(serviceOne);
       });
-      app.post("/insreview", async(req, res) => {
+      app.post("/insreview", async (req, res) => {
          const review = req.body;
          review.date = new Date().toLocaleDateString("bn-BD");
          review.time = new Date().toLocaleTimeString("bn-BD");
@@ -50,6 +44,14 @@ async function run() {
          console.log(review);
          const addedReview = await allReviewCollection.insertOne(review);
          res.send(addedReview);
+      });
+      app.get("/insreview/:id", async (req, res) => {
+         const id = req.params.id;
+         // console.log(id);
+         const query = { service_id: id };
+         const serviceReview = await allReviewCollection.find(query).sort({ timeInMili: -1 }).toArray();
+         res.send(serviceReview);
+         // console.log(serviceReview);
       });
    } finally {
    }
