@@ -19,6 +19,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
    try {
       const serviceCollection = client.db("wild-photo").collection("services");
+      const allReviewCollection = client.db("wild-photo").collection("all-review");
       app.get("/servehome", async (req, res) => {
          const query = {};
          const serviceHome = await serviceCollection.find(query).limit(3).toArray();
@@ -40,6 +41,15 @@ async function run() {
          console.log(date, time, timeInMili); */
          // sort id : id: 1----> .sort({"timeInMili": -1})
          res.send(serviceOne);
+      });
+      app.post("/insreview", async(req, res) => {
+         const review = req.body;
+         review.date = new Date().toLocaleDateString("bn-BD");
+         review.time = new Date().toLocaleTimeString("bn-BD");
+         review.timeInMili = new Date().getTime();
+         console.log(review);
+         const addedReview = await allReviewCollection.insertOne(review);
+         res.send(addedReview);
       });
    } finally {
    }
