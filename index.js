@@ -29,6 +29,18 @@ async function run() {
          const serviceHome = await serviceCollection.find(query).toArray();
          res.send(serviceHome);
       });
+      app.get("/services/:id", async (req, res) => {
+         const id = req.params.id;
+         const query = { _id: ObjectId(id) };
+         const serviceOne = await serviceCollection.findOne(query);
+         // date code write here
+         /* const date = new Date().toLocaleDateString("bn-BD");
+         const time = new Date().toLocaleTimeString("bn-BD");
+         const timeInMili = new Date().getTime();
+         console.log(date, time, timeInMili); */
+         // sort id : id: 1----> .sort({"timeInMili": -1})
+         res.send(serviceOne);
+      });
    } finally {
    }
 }
