@@ -63,7 +63,6 @@ async function run() {
          const id = req.params.id;
          const query = { _id: ObjectId(id) };
          const deleted = await allReviewCollection.deleteOne(query);
-         console.log("dakdakk");
          res.send(deleted);
       })
    } finally {
