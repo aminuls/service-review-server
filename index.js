@@ -45,6 +45,12 @@ async function run() {
          const addedReview = await allReviewCollection.insertOne(review);
          res.send(addedReview);
       });
+      app.get("/insmyreview/:email", async (req, res) => {
+         const email = req.params.email;
+         const query = { email: email };
+         const myReview = await allReviewCollection.find(query).toArray();
+         res.send(myReview);
+      });
       app.get("/insreview/:id", async (req, res) => {
          const id = req.params.id;
          // console.log(id);
