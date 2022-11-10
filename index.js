@@ -59,6 +59,13 @@ async function run() {
          res.send(serviceReview);
          // console.log(serviceReview);
       });
+      app.delete("/delete/:id", async(req, res)=>{
+         const id = req.params.id;
+         const query = { _id: ObjectId(id) };
+         const deleted = await allReviewCollection.deleteOne(query);
+         console.log("dakdakk");
+         res.send(deleted);
+      })
    } finally {
    }
 }
