@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
@@ -16,19 +17,39 @@ app.get("/", (req, res) => {
 const uri = process.env.DB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+   const authHeader = req.headers.authorization;
+   if (!authHeader) {
+      return res.status(401).send({ message: "Unauthorized Access" });
+   }
+   const token = authHeader.split(" ")[1];
+   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+      if (err) {
+         return res.status(401).send({ message: "Unauthorized Access" });
+      }
+      req.decoded = decoded;
+      next();
+   });
+}
+
 async function run() {
    try {
       const serviceCollection = client.db("wild-photo").collection("services");
       const allReviewCollection = client.db("wild-photo").collection("all-review");
       app.get("/servehome", async (req, res) => {
          const query = {};
-         const serviceHome = await serviceCollection.find(query).limit(3).toArray();
+         const serviceHome = await serviceCollection.find(query).sort({ _id: -1 }).limit(3).toArray();
          res.send(serviceHome);
       });
       app.get("/services", async (req, res) => {
          const query = {};
          const serviceHome = await serviceCollection.find(query).toArray();
          res.send(serviceHome);
+      });
+      app.post("/services", verifyJWT, async (req, res) => {
+         const addServiceBody = req.body;
+         const addService = await serviceCollection.insertOne(addServiceBody);
+         res.send(addService);
       });
       app.get("/services/:id", async (req, res) => {
          const id = req.params.id;
@@ -45,7 +66,7 @@ async function run() {
          const addedReview = await allReviewCollection.insertOne(review);
          res.send(addedReview);
       });
-      app.get("/insmyreview/:email", async (req, res) => {
+      app.get("/insmyreview/:email", verifyJWT, async (req, res) => {
          const email = req.params.email;
          const query = { email: email };
          const myReview = await allReviewCollection.find(query).toArray();
@@ -59,12 +80,27 @@ async function run() {
          res.send(serviceReview);
          // console.log(serviceReview);
       });
-      app.delete("/delete/:id", async(req, res)=>{
+      app.delete("/delete/:id", verifyJWT, async (req, res) => {
          const id = req.params.id;
          const query = { _id: ObjectId(id) };
          const deleted = await allReviewCollection.deleteOne(query);
          res.send(deleted);
-      })
+      });
+      app.patch("/update/:id", verifyJWT, async (req, res) => {
+         const id = req.params.id;
+         const updatedData = req.body;
+         const query = { _id: ObjectId(id) };
+         const updated = await allReviewCollection.updateOne(query, { $set: updatedData }, { upsert: false });
+         // console.log(updatedData);
+         // console.log(updated);
+         res.send(updated);
+      });
+      app.get("/modal/:id", verifyJWT, async (req, res) => {
+         const id = req.params.id;
+         const query = { _id: ObjectId(id) };
+         const modalData = await allReviewCollection.findOne(query);
+         res.send(modalData);
+      });
    } finally {
    }
 }
